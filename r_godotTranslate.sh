@@ -38,7 +38,14 @@ function transfunc()
 	echo -e $output_buffer > translation.csv	
 }
 
-
+# Check arg count
+if [ $# -lt 2 ]
+then
+	echo "Please provide additional arguments"
+	echo "Usage : $0 file.txt [languages . . .]"
+	echo "Example : $0 file.txt fr ru"
+	exit
+fi	
 
 
 # Get list of languages
