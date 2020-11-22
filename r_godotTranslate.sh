@@ -5,37 +5,70 @@
 
 input_file=$1
 output_buffer=""		# Output text
-word_count=0			# Total number of words
-words_done=0			# Number of words processed
 langs=()				# List of languages
 
 function transfunc()
 {
-	while read char 
+	# file is in format : key, "en-value"
+	# This function converts file into : key,en-value,l1-value,l2-value.....
+	
+	transTexts=()			# This will hold translated value
+	text=""					# This will hold en value (values as text)
+	keys=()					# This will hold keys
+	values=()				# This will hold values (values in array)
+
+	# Read keys and values
+	while read char
 	do
 		# Skip empty strings
-		if [ "$char" != "" ]
+		if [ "$char" != "" ] && [ "$char" != "\n" ]
 		then
 			# Get key
 			key=$(echo "$char" | awk -F "," '{print $1;}')
-			# Get text
-			text=$(echo "$char" | awk -F "," '{print $2;}') 
-			# Trim spaces tabs and ""
-		    text=$(echo "$text" | sed -e 's/^[ \t]*//g;s/\"//g')
-			# Write to output buffer
-		    output_buffer="$output_buffer\n$key,$text"
-			for lang in "${langs[@]}"
-			do
-				tword=$(trans "$text" -t "$lang" -b)
-				output_buffer="$output_buffer,$tword"
-				# Show progress
-				let words_done++
-				echo -ne "Done  $words_done / $word_count"\\r
-			done			
+			# Get Value
+			value=$(echo "$char" | awk -F "," '{print $2;}') 
+			# append value to text
+			text="$text$value,"
+			keys+=($key)
+			# remove ""
+			value=$(echo $value | sed -e 's/^[ \t]*//g;s/\"//g')
+			values+=("$value")
 		fi
 	done
+
+	# Translate text to langs
+	for lang in "${langs[@]}"
+	do
+		echo "Translating to $lang"
+		# Translate text
+		transTxt=$(trans "$text" -t "$lang" -b)
+		# Split Text by ,
+		IFS=','
+		read -ra strings <<< "$transTxt"
+		transTexts+=("${strings[@]}")
+		echo "Done translation for $lang. Taking a 4 second pause..."
+		sleep 4
+	done
+	
+	IFS=''
+
+	# Write to buffer
+	for (( i=0; i<${#keys[@]}; i++ ))
+	do
+		# Add key and en text
+		output_buffer="$output_buffer\n${keys[$i]},${values[$i]}"
+		# Add lang texts
+		for (( j=0; j<${#langs[@]}; j++ ))
+		do
+			let index=$i+${#keys[@]}*$j
+			# Trim spaces tabs and ""
+			value=$(echo "${transTexts[$index]}" | sed -e 's/^[ \t]*//g;s/\"//g')
+			output_buffer="$output_buffer,$value"
+		done
+	done
+	
 	# Write output buffer to file
-	echo -e $output_buffer > translation.csv	
+	echo -e $output_buffer > translation.csv
 }
 
 # Check arg count
@@ -59,9 +92,6 @@ do
 	counter=1
 done
 
-# calculate total number of words
-let word_count=("$#"-1)*"$(cat $input_file | wc -l)"
-
 # set buffer
 output_buffer="keys,en"
 for i in "${langs[@]}"
@@ -72,3 +102,4 @@ done
 # Read and process input file
 cat $input_file | transfunc
 echo "Done -----------------------------"
+echo "File saved as translation.csv"
