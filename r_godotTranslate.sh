@@ -26,7 +26,7 @@ function transfunc()
 			# Get key
 			key=$(echo "$char" | awk -F "," '{print $1;}')
 			# Get Value
-			value=$(echo "$char" | awk -F "," '{print $2;}') 
+			value=$(echo "$char" | awk -F "," '{print $2;}' | sed -e 's/\"//g') 
 			# append value to text
 			text="$text$value,"
 			keys+=($key)
