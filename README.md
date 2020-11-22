@@ -9,16 +9,19 @@ sudo apt-get install translate-shell
 
 # Usage
 
+Run script in terminal.
 ```
 ./r_godotTranslate.sh textfile.txt [languages...]
 ```
-
-For example: To translate your game texts into Russian, French and Spanish
+To translate your game texts into Russian, French and Spanish
 ```
 ./r_godotTranslate.sh textfile.txt ru fr es
 ```
 
-Where textfile.txt is the file you want to translate. Field 1 is your key and field 2 is the text in English and they are seperated by ',' and field 2 is in ""
+Where textfile.txt is the file you want to translate.
+- Field 1 is your key.
+- Field 2 is the text in English and they are seperated by ',' and field 2 is in "quotes".
+
 Example: File for my game
 ```
 MENU_new_game,		"New Game"
@@ -59,4 +62,4 @@ ONCE_msg1,			"You can change your name later in settings"
 
 ```
 
-Output will be saved as translation.csv
+**Output will be saved as translation.csv**
